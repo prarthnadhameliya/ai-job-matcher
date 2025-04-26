@@ -1,0 +1,22 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import ResumeUpload from './components/ResumeUpload';
+import Settings from './components/Settings';
+import Home from './pages/Home';
+
+function App() {
+  return (
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/upload" element={<ResumeUpload />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<div style={{ padding: "2rem" }}>404 Page Not Found</div>} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
