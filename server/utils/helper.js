@@ -1,28 +1,20 @@
 const TfidfHelper = require('./utils');
 
 // Cosine Similarity
-function cosineSimilarity(vec1, vec2) {
+function cosineSimilarity(vec1, vec2Map, normA, normB) {
   let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
 
   vec1.forEach((term1) => {
-    const term2 = vec2.find((t) => t.term === term1.term);
-    if (term2) {
-      dotProduct += term1.tfidf * term2.tfidf;
+    if (vec2Map.has(term1.term)) {
+      dotProduct += term1.tfidf * vec2Map.get(term1.term);
     }
   });
 
-  vec1.forEach((term) => {
-    normA += term.tfidf * term.tfidf;
-  });
+  return dotProduct / (normA * normB);
+}
 
-  vec2.forEach((term) => {
-    normB += term.tfidf * term.tfidf;
-  });
-
-  // console.log(dotProduct, normA, normB);
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+function vectorNorm(vec) {
+  return Math.sqrt(vec.reduce((sum, term) => sum + term.tfidf * term.tfidf, 0));
 }
 
 // Function to match resume with jobs using TF-IDF and Cosine Similarity
@@ -35,17 +27,24 @@ function matchJobs(resumeText, dataset) {
   // Compute TF-IDF for the resume
   tfidf.addDocument(resumeText);
 
-  // Get the vector for the resume
-  const resumeVector = tfidf.listTerms(tfidf.getAllDocuments().length - 1);
-  
-  // Find cosine similarity for each job description
+  const allDocs = tfidf.getAllDocuments();
+
+  // Precompute job vectors and norms
+  const jobVectors = dataset.map((_, index) => tfidf.listTerms(index));
+  const jobVectorMaps = jobVectors.map(vec => new Map(vec.map(t => [t.term, t.tfidf])));
+  const jobNorms = jobVectors.map(vectorNorm);
+
+  // Resume vector and norm
+  const resumeVector = tfidf.listTerms(allDocs.length - 1);
+  const resumeNorm = vectorNorm(resumeVector);
+
+  // Find cosine similarity
   const matches = dataset.map((job, index) => {
-    const jobVector = tfidf.listTerms(index);
-    const similarity = cosineSimilarity(resumeVector, jobVector);
+    const similarity = cosineSimilarity(resumeVector, jobVectorMaps[index], resumeNorm, jobNorms[index]);
     return { job, score: similarity };
   });
 
-  // Sort matches by score (higher similarity)
+  // Sort matches by score
   matches.sort((a, b) => b.score - a.score);
   return matches.slice(0, 5); // Return top 5 matches
 }

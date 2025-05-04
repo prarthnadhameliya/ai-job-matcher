@@ -7,6 +7,9 @@ const path = require('path');
 const { jobDataset } = require('./dataset/data');
 const { matchJobs } = require('./utils/helper'); // We'll create these helper functions
 
+app.use("/api/auth", require("./routes/authRoutes"));
+
+
 const app = express();
 const PORT = 8000;
 
