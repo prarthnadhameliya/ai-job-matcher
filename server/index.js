@@ -4,11 +4,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const path = require('path');
-const { jobDataset } = require('./dataset/data');
-const { matchJobs } = require('./utils/helper'); // We'll create these helper functions
-
-app.use("/api/auth", require("./routes/authRoutes"));
-
+const { initializeDatabase, findMatchingJobs } = require('./dataset/index');
 
 const app = express();
 const PORT = 8000;
@@ -44,19 +40,22 @@ app.post('/upload', upload.single('resume'), async (req, res) => {
     }
 
     // Match the resume text to job descriptions
-    const jobMatches = matchJobs(resumeText, jobDataset);
-
-    return res.json(jobMatches);
+    const topMatches = await findMatchingJobs(resumeText);
+    return res.json(topMatches);
   } catch (error) {
     console.error('Error uploading resume:', error);
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Start the server
-app.listen(PORT, (err) => {
-  if (err) {
-    console.log(err);
-  }
-  console.log(`Server is running on http://localhost:${PORT}`);
+
+// Initialize cache before starting server
+initializeDatabase().then(() => {
+  // Start the server
+  app.listen(PORT, (err) => {
+    if (err) {
+      console.log(err);
+    }
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
 });
