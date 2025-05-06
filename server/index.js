@@ -4,7 +4,8 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const path = require('path');
-const { initializeDatabase, findMatchingJobs } = require('./dataset/index');
+const Fuse = require('fuse.js');
+const { initializeDatabase, findMatchingJobs, loadJobDatabase } = require('./dataset/index');
 
 const app = express();
 const PORT = 8000;
@@ -15,6 +16,59 @@ app.use(cors())
 // Set up file upload using multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// Initialize Fuse.js search index
+let fuse = null;
+
+// Configure Fuse.js options
+const fuseOptions = {
+  keys: [
+    { name: 'title', weight: 2 },
+    { name: 'company_profile', weight: 1.5 },
+    { name: 'description', weight: 1 },
+    { name: 'requirements', weight: 1 }
+  ],
+  threshold: 0.3,
+  includeScore: true
+};
+
+// Initialize search index with jobs data
+async function initializeSearchIndex() {
+  const jobs = await loadJobDatabase();
+  fuse = new Fuse(jobs, fuseOptions);
+}
+
+// Route to get all jobs
+app.get('/jobs', async (req, res) => {
+  const jobs = await loadJobDatabase();
+  res.json(jobs);
+});
+
+// New route for searching jobs
+app.get('/jobs/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    if (!fuse) {
+      await initializeSearchIndex();
+    }
+
+    const searchResults = fuse.search(query);
+    const results = searchResults.map(result => ({
+      ...result.item,
+      score: result.score
+    }));
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching jobs:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // Route to handle resume upload and job matching
 app.post('/upload', upload.single('resume'), async (req, res) => {
@@ -48,14 +102,15 @@ app.post('/upload', upload.single('resume'), async (req, res) => {
   }
 });
 
-
-// Initialize cache before starting server
+// Initialize cache and search index before starting server
 initializeDatabase().then(() => {
-  // Start the server
-  app.listen(PORT, (err) => {
-    if (err) {
-      console.log(err);
-    }
-    console.log(`Server is running on http://localhost:${PORT}`);
+  initializeSearchIndex().then(() => {
+    // Start the server
+    app.listen(PORT, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
   });
 });

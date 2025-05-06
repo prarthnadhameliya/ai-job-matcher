@@ -1,70 +1,59 @@
 import React from 'react';
-import { Container, Typography, Button, Grid, Card, CardContent, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import SearchIcon from '@mui/icons-material/Search';
-import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import './Home.css';
 
-const benefits = [
-  {
-    icon: <WorkOutlineIcon fontSize="large" color="primary" />,
-    title: 'Personalized Job Matches',
-    desc: 'We analyze your resume using AI to recommend jobs that match your skills and interests.',
-  },
-  {
-    icon: <SearchIcon fontSize="large" color="primary" />,
-    title: 'Streamlined Search',
-    desc: 'Skip the hassle of browsing endlessly. Let us bring the best jobs to you.',
-  },
-  {
-    icon: <SettingsSuggestIcon fontSize="large" color="primary" />,
-    title: 'Smart & Adaptive',
-    desc: 'Our system gets smarter with time to better understand your preferences.',
-  },
-];
-
-const Home = () => {
+function Home() {
   return (
-    <Container sx={{ mt: 6 }}>
-      <Typography variant="h3" gutterBottom>
-        Welcome to <span style={{ color: '#1976d2' }}>AI Job Matcher</span>
-      </Typography>
-      <Typography variant="h6" sx={{ mb: 4 }}>
-        Upload your resume and let our AI find the best jobs tailored to you.
-      </Typography>
+    <div className="home-container">
+      <div className="hero-section">
+        <h1 className="main-title">JobMatch</h1>
+        <p className="subtitle">Find Your Perfect Career Match</p>
+        <div className="cta-buttons">
+          <Link to="/jobs" className="cta-button primary">Browse Jobs</Link>
+          <Link to="/upload" className="cta-button secondary">Upload Resume</Link>
+        </div>
+      </div>
 
-      <Button
-        variant="contained"
-        color="primary"
-        size="large"
-        component={Link}
-        to="/upload"
-        sx={{ mb: 6 }}
-      >
-        Upload Resume
-      </Button>
+      <div className="features-section">
+        <div className="feature-card">
+          <div className="feature-icon">🔍</div>
+          <h3>Smart Job Search</h3>
+          <p>Find jobs that match your skills and experience using our advanced matching algorithm.</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">📝</div>
+          <h3>Resume Analysis</h3>
+          <p>Upload your resume and get personalized job recommendations based on your profile.</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">🎯</div>
+          <h3>Perfect Matches</h3>
+          <p>Get matched with opportunities that align with your career goals and aspirations.</p>
+        </div>
+      </div>
 
-      <Grid container spacing={4}>
-        {benefits.map((benefit, index) => (
-          <Grid item xs={12} sm={4} key={index}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  {benefit.icon}
-                </Box>
-                <Typography variant="h6" gutterBottom align="center">
-                  {benefit.title}
-                </Typography>
-                <Typography variant="body2" align="center">
-                  {benefit.desc}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
+      <div className="how-it-works">
+        <h2>How It Works</h2>
+        <div className="steps-container">
+          <div className="step">
+            <div className="step-number">1</div>
+            <h3>Upload Your Resume</h3>
+            <p>Start by uploading your resume in PDF or DOCX format.</p>
+          </div>
+          <div className="step">
+            <div className="step-number">2</div>
+            <h3>Get Matched</h3>
+            <p>Our AI analyzes your skills and finds the best job matches.</p>
+          </div>
+          <div className="step">
+            <div className="step-number">3</div>
+            <h3>Apply & Succeed</h3>
+            <p>Apply to matched positions and take the next step in your career.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
-};
+}
 
 export default Home;
